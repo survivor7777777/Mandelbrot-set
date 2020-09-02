@@ -2,6 +2,7 @@
 // mandelbrot.cc
 // Licensed under the Creative Comons Zero v1.0 Universal
 
+#include <omp.h>
 #include <complex>
 #include <math.h>
 #include <opencv2/opencv.hpp>
@@ -73,6 +74,7 @@ inline cv::Vec3b color(const double m) {
 void draw(const complex<double>& p, const double range, const int width, const int height, const string& name) {
     const double scale = range * 2 / width;
     cv::Mat image(height, width, CV_8UC3);
+    #pragma omp parallel for
     for (int i = 0; i < height; i++) {
 	double y = p.imag() + (i - height / 2) * scale;
 	cv::Vec3b *line = image.ptr<cv::Vec3b>(i);
