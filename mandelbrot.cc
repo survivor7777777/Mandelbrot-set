@@ -21,8 +21,8 @@ using namespace std;
 // Mandelbrot function
 //
 
-double mandelbrot(const complex<double>& c) {
-    complex<double> z = 0.0;
+double mandelbrot(const complex<long double>& c) {
+    complex<long double> z = 0.0;
     for (int n = 1; n < MAX_N; n++) {
 	z = z * z + c;
 	if (abs(z) > 4.0)
@@ -71,16 +71,17 @@ inline cv::Vec3b color(const double m) {
 // Draw a picture
 //
 
-void draw(const complex<double>& p, const double range, const int width, const int height, const string& name) {
-    const double scale = range * 2 / width;
+void draw(const complex<long double>& p, const long double range,
+    const int width, const int height, const string& name) {
+    const long double scale = range * 2 / width;
     cv::Mat image(height, width, CV_8UC3);
-    #pragma omp parallel for
     for (int i = 0; i < height; i++) {
-	double y = p.imag() + (i - height / 2) * scale;
+	long double y = p.imag() + (i - height / 2) * scale;
 	cv::Vec3b *line = image.ptr<cv::Vec3b>(i);
+	#pragma omp parallel for
 	for (int j = 0; j < width; j++) {
-	    double x = p.real() + (j - width / 2) * scale;
-	    const complex<double> z(x, y);
+	    long double x = p.real() + (j - width / 2) * scale;
+	    const complex<long double> z(x, y);
 	    const double m = mandelbrot(z);
 	    line[j] = color(m);
 	}
@@ -113,13 +114,16 @@ int main(int argc, char** argv) {
 	cerr << "Missing parameters" << endl;
 	return 1;
     }
-    const double real = stod(argv[1]);
-    const double imag = stod(argv[2]);
-    const double range_s = stod(argv[3]);
-    const double range_e = stod(argv[4]);
+    const long double real = stold(argv[1]);
+    const long double imag = stold(argv[2]);
+    const long double range_s = stold(argv[3]);
+    const long double range_e = stold(argv[4]);
     const int frames = stoi(argv[5]);
     const int width = stoi(argv[6]);
     const int height = stoi(argv[7]);
+
+    cout << setprecision(52);
+    cerr << setprecision(52);
 
     if (range_s == range_e || range_s <= 0.0 || range_e <= 0.0 ||
 	frames <= 1 || width <= 0 || height <= 0) {
@@ -137,13 +141,11 @@ int main(int argc, char** argv) {
 
     init_colors();
 
-    // const complex<double> z(-0.761574, -0.0847596);
-    // const complex<double> z(-0.7746806106269039, -0.1374168856037867);
-    const complex<double> z(real, imag);
-    double log_rate = (log(range_e) - log(range_s)) / (frames - 1);
+    const complex<long double> z(real, imag);
+    const long double log_rate = (log(range_e) - log(range_s)) / (frames - 1);
     for (int i = 0; i < frames; i++) {
 	const string name = filename(i);
-	const double r = range_s * exp(i * log_rate);
+	const long double r = range_s * exp(i * log_rate);
 	cout << name << " " << z << " " << r << endl;
 	draw(z, r, width, height, name);
     }
