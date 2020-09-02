@@ -52,13 +52,13 @@ void init_colors() {
     const cv::Vec3b c4(2, 0, 0);
 
     // phase-1
-    interpolate_colors(c1, c2, 100);
+    interpolate_colors(c1, c2, 200);
     
     // phase-2
-    interpolate_colors(c2, c3, 50);
+    interpolate_colors(c2, c3, 100);
    
     // phase-3
-    interpolate_colors(c3, c4, 50);
+    interpolate_colors(c3, c4, 100);
     color_vector.push_back(c4);
 }
 
