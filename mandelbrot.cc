@@ -8,7 +8,7 @@
 #include <opencv2/imgproc.hpp>
 #include <iostream>
 #include <iomanip>
-#include <strstream>
+#include <sstream>
 #include <vector>
 
 using namespace std;
@@ -87,7 +87,7 @@ void draw(const complex<double>& p, const double range, const int width, const i
 }
 
 string filename(int n) {
-    ostrstream name;
+    stringstream name;
     name << "mandelbrot-" << setw(4) << setfill('0') << n << ".png" << ends;
     return (string)name.str();
 }
