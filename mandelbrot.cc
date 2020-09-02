@@ -63,7 +63,7 @@ void init_colors() {
 }
 
 inline cv::Vec3b color(const double m) {
-    const int index = (int)(color_vector.size() * (m / MAX_M));
+    const int index = (int)((color_vector.size() - 1) * (m / MAX_M));
     return color_vector[index];
 }
 
