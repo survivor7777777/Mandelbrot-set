@@ -15,10 +15,10 @@ endif
 all: mandelbrot
 
 mandelbrot: mandelbrot.o
-	$(CXX) $(LDFLAGS) -o mandelbrot mandelbrot.o 
+	$(CXX) -o mandelbrot mandelbrot.o $(LDFLAGS)
 
 mandelbrot.o: mandelbrot.cc
-	$(CXX) $(CXXFLAGS) -c mandelbrot.cc -o mandelbrot.o
+	$(CXX) -c mandelbrot.cc -o mandelbrot.o $(CXXFLAGS)
 
 clean:
 	rm -f mandelbrot mandelbrot.o
