@@ -47,19 +47,40 @@ void interpolate_colors(const cv::Vec3b& c_s, const cv::Vec3b& c_e, const int st
 
 void init_colors() {
     const cv::Vec3b c1(100, 7, 0);
-    const cv::Vec3b c2(255, 255, 255);
-    const cv::Vec3b c3(0, 170, 255);
-    const cv::Vec3b c4(2, 0, 0);
+    const cv::Vec3b c2(178, 131, 128);
+    const cv::Vec3b c3(255, 255, 255);
+    const cv::Vec3b c4(128, 212, 255);
+    const cv::Vec3b c5(0, 170, 255);
+    const cv::Vec3b c6(2, 0, 0);
 
     // phase-1
-    interpolate_colors(c1, c2, 200);
+    interpolate_colors(c1, c2, 125);
     
     // phase-2
-    interpolate_colors(c2, c3, 100);
+    interpolate_colors(c2, c3, 25);
    
     // phase-3
-    interpolate_colors(c3, c4, 100);
-    color_vector.push_back(c4);
+    interpolate_colors(c3, c4, 25);
+
+    // phase-4
+    interpolate_colors(c4, c5, 25);
+
+    // phase-5
+    interpolate_colors(c5, c6, 100);
+    color_vector.push_back(c6);
+
+    // dump color table to "colormap.png"
+    {
+	const int height = 48;
+	cv::Mat image(height, color_vector.size(), CV_8UC3);
+	for (int i = 0; i < height; i++) {
+	    cv::Vec3b *line = image.ptr<cv::Vec3b>(i);
+	    for (int j = 0; j < color_vector.size(); j++) {
+		line[j] = color_vector[j];
+	    }
+	}
+	cv::imwrite("colormap.png", image);
+    }
 }
 
 inline cv::Vec3b color(const double m) {

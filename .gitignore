@@ -1,6 +1,7 @@
 mandelbrot.o
 mandelbrot
-mandelbrot.mp4
+*.mp4
 mandelbrot-*.png
+colormap.png
 
 .DS_Store
