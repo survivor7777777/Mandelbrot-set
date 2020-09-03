@@ -1,8 +1,3 @@
-CENTER=-0.7746806106269039 -0.1374168856037867
-RANGE=1 2e-13
-FRAMES=750
-IMAGE_SIZE=1920 1080
-
 .PHONY: all clean images video
 
 all: mandelbrot
@@ -21,11 +16,3 @@ mandelbrot.o: mandelbrot.cc
 
 clean:
 	rm -f mandelbrot mandelbrot.o
-	rm -f mandelbrot-*.png
-	rm -f mandelbrot.mp4
-
-images: mandelbrot
-	./mandelbrot $(CENTER) $(RANGE) $(FRAMES) $(IMAGE_SIZE)
-
-video: 
-	ffmpeg -r 30 -i mandelbrot-%04d.png -vcodec libx264 -pix_fmt yuv420p -r 30 mandelbrot.mp4
