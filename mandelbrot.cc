@@ -97,7 +97,7 @@ void draw(const complex<long double>& p, const long double range,
     const long double scale = range * 2 / width;
     cv::Mat image(height, width, CV_8UC3);
     for (int i = 0; i < height; i++) {
-	long double y = p.imag() + (i - height / 2) * scale;
+	long double y = p.imag() + (height / 2 - i) * scale;
 	cv::Vec3b *line = image.ptr<cv::Vec3b>(i);
 	#pragma omp parallel for
 	for (int j = 0; j < width; j++) {
@@ -162,11 +162,15 @@ int main(int argc, char** argv) {
 
     init_colors();
 
-    const complex<long double> z(real, imag);
+    const complex<long double> z1(real, imag);
+    const long double abs_z1 = abs(z1);
     const long double log_rate = (log(range_e) - log(range_s)) / (frames - 1);
     for (int i = 0; i < frames; i++) {
 	const string name = filename(i);
 	const long double r = range_s * exp(i * log_rate);
+	const long double x = (double)(frames - i) / frames * r;
+	const complex<long double> dz(-0.8 * x, 0.5 * x);
+	const complex<long double> z = z1 + dz;
 	cout << name << " " << z << " " << r << endl;
 	draw(z, r, width, height, name);
     }
