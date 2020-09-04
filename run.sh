@@ -43,7 +43,7 @@ if [ -z "$CENTER_RE" -o -z "$CENTER_IM" -o \
     Abort "ERROR: Some of the parameters are missing"
 fi
 
-ls mandelbrot-*.png >/dev/null 2>&1 && Abort "ERROR: You have to remove mandelbrot-*.png first"
+(ls | grep -q 'mandelbrot-.*\.png') && Abort "ERROR: You have to remove mandelbrot-*.png first"
 
 $dir/mandelbrot $CENTER_RE $CENTER_IM \
     $RANGE_S $RANGE_E $FRAMES \

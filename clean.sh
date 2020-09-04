@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rm -f mandelbrot-*.png
+ls | grep "mandelbrot-.*.png" | xargs rm
