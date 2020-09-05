@@ -14,8 +14,9 @@
 
 using namespace std;
 
-#define MAX_N 30000
-#define MAX_M log(MAX_N)
+const int MAX_N = 30000;
+const long double MAX_M = log((long double)MAX_N);
+const long double PI = atan(1.0L)*4.0L;
 
 //
 // Mandelbrot function
@@ -51,7 +52,8 @@ void init_colors() {
     const cv::Vec3b c3(255, 255, 255);
     const cv::Vec3b c4(128, 212, 255);
     const cv::Vec3b c5(0, 170, 255);
-    const cv::Vec3b c6(2, 0, 0);
+    const cv::Vec3b c6(2, 50, 255);
+    const cv::Vec3b c7(2, 0, 0);
 
     // phase-1
     interpolate_colors(c1, c2, 125);
@@ -66,8 +68,11 @@ void init_colors() {
     interpolate_colors(c4, c5, 25);
 
     // phase-5
-    interpolate_colors(c5, c6, 100);
-    color_vector.push_back(c6);
+    interpolate_colors(c5, c6, 50);
+
+    // phase-6
+    interpolate_colors(c6, c7, 50);
+    color_vector.push_back(c7);
 
     // dump color table to "colormap.png"
     {
@@ -168,8 +173,10 @@ int main(int argc, char** argv) {
     for (int i = 0; i < frames; i++) {
 	const string name = filename(i);
 	const long double r = range_s * exp(i * log_rate);
-	const long double x = (double)(frames - i) / frames * r;
-	const complex<long double> dz(-0.8 * x, 0.5 * x);
+	const long double x = (long double)(frames - i) / frames;
+	const long double dt = 2.0L * PI * x;
+	const long double dr = 0.5L * x * r;
+	const complex<long double> dz(dr*cos(dt), dr*sin(dt));
 	const complex<long double> z = z1 + dz;
 	cout << name << " " << z << " " << r << endl;
 	draw(z, r, width, height, name);
