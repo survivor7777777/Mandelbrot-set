@@ -54,6 +54,7 @@ if [ "$LOOP" -eq 1 ]; then
 fi
 
 VIDEO="$(basename $FILE .dat).mp4"
+rm -rf $VIDEO
 ffmpeg -r 30 -i mandelbrot-%04d.png -vcodec libx264 -pix_fmt yuv420p -r 30 "$VIDEO" || Abort "Error in ffmpeg"
 
 echo "$cmd: successfully generated $VIDEO"
