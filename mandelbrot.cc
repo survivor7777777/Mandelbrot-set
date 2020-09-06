@@ -135,18 +135,21 @@ void usage(const char* cmd) {
 //
 
 int main(int argc, char** argv) {
-    if (argc != 8) {
+    if (argc != 10) {
 	usage(argv[0]);
 	cerr << "Missing parameters" << endl;
 	return 1;
     }
-    const long double real = stold(argv[1]);
-    const long double imag = stold(argv[2]);
-    const long double range_s = stold(argv[3]);
-    const long double range_e = stold(argv[4]);
-    const int frames = stoi(argv[5]);
-    const int width = stoi(argv[6]);
-    const int height = stoi(argv[7]);
+    char** p = argv;
+    const long double real = stold(*++p);
+    const long double imag = stold(*++p);
+    const long double range_s = stold(*++p);
+    const long double range_e = stold(*++p);
+    const long double theta_s = stold(*++p);
+    const long double turns = stold(*++p);
+    const int frames = stoi(*++p);
+    const int width = stoi(*++p);
+    const int height = stoi(*++p);
 
     cout << setprecision(52);
     cerr << setprecision(52);
@@ -159,6 +162,8 @@ int main(int argc, char** argv) {
 	    << "center-imag = " << imag << endl
 	    << "range-start = " << range_s << endl
 	    << "range-end = " << range_e << endl
+	    << "theta-start = " << theta_s << endl
+	    << "turns = " << turns << endl
 	    << "frames = " << frames << endl
 	    << "image-width = " << width << endl
 	    << "image-height = " << height << endl;
@@ -174,7 +179,7 @@ int main(int argc, char** argv) {
 	const string name = filename(i);
 	const long double r = range_s * exp(i * log_rate);
 	const long double x = (long double)(frames - i) / frames;
-	const long double dt = 2.0L * PI * x;
+	const long double dt = 2.0L * PI * x * turns + theta_s;
 	const long double dr = 0.5L * x * r;
 	const complex<long double> dz(dr*cos(dt), dr*sin(dt));
 	const complex<long double> z = z1 + dz;

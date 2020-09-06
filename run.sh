@@ -38,7 +38,7 @@ fi
 source "$FILE"
 
 if [ -z "$CENTER_RE" -o -z "$CENTER_IM" -o \
-    -z "$RANGE_S" -o -z "$RANGE_E" -o \
+    -z "$RANGE_S" -o -z "$RANGE_E" -o -z "$THETA_S" -o -z "$TURNS" -o \
     -z "$FRAMES" -o -z "$IMAGE_WIDTH" -o -z "$IMAGE_HEIGHT" ]; then
     Abort "ERROR: Some of the parameters are missing"
 fi
@@ -46,7 +46,7 @@ fi
 (ls | grep -q 'mandelbrot-.*\.png') && Abort "ERROR: You have to remove mandelbrot-*.png first"
 
 $dir/mandelbrot $CENTER_RE $CENTER_IM \
-    $RANGE_S $RANGE_E $FRAMES \
+    $RANGE_S $RANGE_E $THETA_S $TURNS $FRAMES \
     $IMAGE_WIDTH $IMAGE_HEIGHT || Abort "ERROR in image generation"
 
 if [ "$LOOP" -eq 1 ]; then
