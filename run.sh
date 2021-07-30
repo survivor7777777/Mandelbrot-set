@@ -4,7 +4,7 @@ dir=$(dirname $0)
 cmd=$(basename $0)
 
 Usage() {
-    echo Usage: $cmd [ --loop ] parameter-file.dat
+    echo Usage: $cmd [ --help ] parameter-file.dat
 }
 
 Abort() {
@@ -12,12 +12,9 @@ Abort() {
     exit 1
 }
 
-LOOP=0
 while [ $# -gt 0 ]; do
     case "$1" in
-    --loop)
-	LOOP=1; shift;;
-    -*)
+    --help|-h)
 	Usage; exit 1;;
     *)
 	break;;
@@ -35,6 +32,20 @@ if [ ! -r "$FILE" ]; then
     exit 1
 fi
 
+
+#default parameters
+CENTER_RE=-0.743291890852430203178864079732928781048879471415530370083313150
+CENTER_IM=0.1312405523087976045493474233902208417186606174208137220225662074
+RANGE_S=1e-2
+RANGE_E=1e-5
+THETA_S=3.14159265358979
+TURNS=-2
+FRAMES=100
+IMAGE_WIDTH=320
+IMAGE_HEIGHT=180
+LOOP=0
+
+# read parameters
 source "$FILE"
 
 if [ -z "$CENTER_RE" -o -z "$CENTER_IM" -o \
