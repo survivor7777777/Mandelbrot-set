@@ -88,8 +88,8 @@ void init_colors() {
     }
 }
 
-inline cv::Vec3b color(const double m) {
-    const int index = (int)((color_vector.size() - 1) * (m / MAX_M));
+inline cv::Vec3b color(const double m, const double min, const double max) {
+    const int index = (int)((color_vector.size() - 1) * ((m - min) / (max - min)));
     return color_vector[index];
 }
 
@@ -100,16 +100,29 @@ inline cv::Vec3b color(const double m) {
 void draw(const complex<long double>& p, const long double range,
     const int width, const int height, const string& name) {
     const long double scale = range * 2 / width;
-    cv::Mat image(height, width, CV_8UC3);
+    cv::Mat m(height, width, CV_64F);
+    double min = MAX_M;
+    double max = 0;
     for (int i = 0; i < height; i++) {
 	long double y = p.imag() + (height / 2 - i) * scale;
-	cv::Vec3b *line = image.ptr<cv::Vec3b>(i);
+	double *mp = m.ptr<double>(i);
 	#pragma omp parallel for
 	for (int j = 0; j < width; j++) {
 	    long double x = p.real() + (j - width / 2) * scale;
 	    const complex<long double> z(x, y);
-	    const double m = mandelbrot(z);
-	    line[j] = color(m);
+	    const double c = mandelbrot(z);
+	    mp[j] = c;
+	    if (min > c) min = c;
+	    if (max < c) max = c;
+	}
+    }
+    cv::Mat image(height, width, CV_8UC3);
+    for (int i = 0; i < height; i++) {
+	double *mp = m.ptr<double>(i);
+	cv::Vec3b *ip = image.ptr<cv::Vec3b>(i);
+	#pragma omp parallel for
+	for (int j = 0; j < width; j++) {
+	    ip[j] = color(mp[j], min, max);
 	}
     }
     cv::imwrite(name, image);
