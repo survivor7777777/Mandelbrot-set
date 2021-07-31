@@ -37,9 +37,6 @@ double mandelbrot(const complex<long double>& c) {
 //
 
 vector<cv::Vec3b> color_vector;
-double min_pixel_value = 0;
-double max_pixel_value = 0;
-double pixel_value_width = 0;
 
 void interpolate_colors(const cv::Vec3b& c_s, const cv::Vec3b& c_e, const int steps) {
     const cv::Vec3d delta((c_e[0]-c_s[0])/(double)steps, (c_e[1]-c_s[1])/(double)steps, (c_e[2]-c_s[2])/(double)steps);
@@ -51,31 +48,19 @@ void interpolate_colors(const cv::Vec3b& c_s, const cv::Vec3b& c_e, const int st
 
 void init_colors() {
     const cv::Vec3b c1(127, 7, 0);
-    const cv::Vec3b c2(195, 127, 63);
-    const cv::Vec3b c3(255, 255, 127);
-    const cv::Vec3b c4(127, 213, 255);
-    const cv::Vec3b c5(0, 169, 255);
-    const cv::Vec3b c6(3, 48, 255);
-    const cv::Vec3b c7(3, 0, 0);
+    const cv::Vec3b c2(196, 64, 64);
+    const cv::Vec3b c3(3, 0, 255);
+    const cv::Vec3b c4(3, 0, 0);
 
     // phase-1
-    interpolate_colors(c1, c2, 399);
+    interpolate_colors(c1, c2, 180);
     
     // phase-2
     interpolate_colors(c2, c3, 100);
    
     // phase-3
-    interpolate_colors(c3, c4, 100);
-
-    // phase-4
-    interpolate_colors(c4, c5, 100);
-
-    // phase-5
-    interpolate_colors(c5, c6, 150);
-
-    // phase-6
-    interpolate_colors(c6, c7, 150);
-    color_vector.push_back(c7);
+    interpolate_colors(c3, c4, 55);
+    color_vector.push_back(c4);
 
     // dump color table to "colormap.png"
     {
@@ -91,22 +76,9 @@ void init_colors() {
     }
 }
 
-inline void set_pixel_range(const double min, const double max) {
-    if (pixel_value_width == 0.0) {
-	min_pixel_value = min;
-	max_pixel_value = max;
-    }
-    else {
-	min_pixel_value = (min_pixel_value + min) * 0.5;
-	max_pixel_value = (max_pixel_value + max) * 0.5;
-    }
-    pixel_value_width = max_pixel_value - min_pixel_value;
-}
 
 inline cv::Vec3b color(const double m) {
-    int index = (int)((color_vector.size() - 1) * ((m - min_pixel_value) / pixel_value_width));
-    if (index < 0) index = 0;
-    if (index >= color_vector.size()) index = color_vector.size() - 1;
+    int index = (int)((color_vector.size()-1) * (m / MAX_M));
     return color_vector[index];
 }
 
@@ -117,33 +89,16 @@ inline cv::Vec3b color(const double m) {
 void draw(const complex<long double>& p, const long double range,
     const int width, const int height, const string& name) {
     const long double scale = range * 2 / width;
-    cv::Mat m(height, width, CV_64F);
-    double min = MAX_M;
-    double max = 0;
+    cv::Mat image(height, width, CV_8UC3);
     for (int i = 0; i < height; i++) {
 	long double y = p.imag() + (height / 2 - i) * scale;
-	double *mp = m.ptr<double>(i);
+	cv::Vec3b *ip = image.ptr<cv::Vec3b>(i);
 	#pragma omp parallel for
 	for (int j = 0; j < width; j++) {
 	    long double x = p.real() + (j - width / 2) * scale;
 	    const complex<long double> z(x, y);
-	    const double c = mandelbrot(z);
-	    mp[j] = c;
-	    if (min > c) min = c;
-	    if (max < c) max = c;
-	}
-    }
-    cout << "min = " << min << " max = " << max << endl;
-    set_pixel_range(min, max);
-    // min = 0;
-    // max = MAX_M;
-    cv::Mat image(height, width, CV_8UC3);
-    for (int i = 0; i < height; i++) {
-	double *mp = m.ptr<double>(i);
-	cv::Vec3b *ip = image.ptr<cv::Vec3b>(i);
-	#pragma omp parallel for
-	for (int j = 0; j < width; j++) {
-	    ip[j] = color(mp[j]);
+	    const double m = mandelbrot(z);
+	    ip[j] = color(m);
 	}
     }
     cv::imwrite(name, image);
