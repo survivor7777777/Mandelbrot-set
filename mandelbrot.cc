@@ -40,14 +40,14 @@ double mandelbrot(const complex<long double>& c) {
 vector<cv::Vec3b> colormap(1000);
 
 void init_colors() {
-    const vector<const cv::Vec3b> y = {
+    const vector<cv::Vec3b> y = {
 	cv::Vec3b(100,   7,   0),
 	cv::Vec3b(203, 107,  32),
 	cv::Vec3b(255, 255, 237),
 	cv::Vec3b(  0, 170, 255),
 	cv::Vec3b(  0,   2,   0)
     };
-    const vector<const double> x = {
+    const vector<double> x = {
 	0.0,
 	0.5,
 	0.667,
