@@ -3,5 +3,7 @@ mandelbrot
 *.mp4
 mandelbrot-*.png
 colormap.png
+colormap.csv
+colormap-graph.png
 
 .DS_Store

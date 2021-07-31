@@ -8,6 +8,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <sstream>
 #include <vector>
@@ -36,50 +37,98 @@ double mandelbrot(const complex<long double>& c) {
 // Color table
 //
 
-vector<cv::Vec3b> color_vector;
-
-void interpolate_colors(const cv::Vec3b& c_s, const cv::Vec3b& c_e, const int steps) {
-    const cv::Vec3d delta((c_e[0]-c_s[0])/(double)steps, (c_e[1]-c_s[1])/(double)steps, (c_e[2]-c_s[2])/(double)steps);
-    for (int i = 0; i < steps; i++) {
-	const cv::Vec3b c((int)(c_s[0] + i * delta[0] + 0.5), (int)(c_s[1] + i * delta[1] + 0.5), (int)(c_s[2] + i * delta[2] + 0.5));
-	color_vector.push_back(c);
-    }
-}
+vector<cv::Vec3b> colormap(1000);
 
 void init_colors() {
-    const cv::Vec3b c1(127, 7, 0);
-    const cv::Vec3b c2(196, 64, 64);
-    const cv::Vec3b c3(3, 0, 255);
-    const cv::Vec3b c4(3, 0, 0);
+    const vector<const cv::Vec3b> y = {
+	cv::Vec3b(100,   7,   0),
+	cv::Vec3b(203, 107,  32),
+	cv::Vec3b(255, 255, 237),
+	cv::Vec3b(  0, 170, 255),
+	cv::Vec3b(  0,   2,   0)
+    };
+    const vector<const double> x = {
+	0.0,
+	0.5,
+	0.667,
+	0.833,
+	1.0,
+    };
+    assert(x.size() == y.size());
+    const int n = x.size();
 
-    // phase-1
-    interpolate_colors(c1, c2, 180);
-    
-    // phase-2
-    interpolate_colors(c2, c3, 100);
-   
-    // phase-3
-    interpolate_colors(c3, c4, 55);
-    color_vector.push_back(c4);
+    // get slopes
+    vector<cv::Vec3d> slope(n - 1);
+    for (int i = 0; i < n - 1; i++) {
+	for (int d = 0; d < 3; d++) {
+	    slope[i][d] = (y[i+1][d] - y[i][d]) / (x[i+1] - x[i]);
+	}
+    }
 
-    // dump color table to "colormap.png"
+    // get degree-1 coefficients
+    vector<cv::Vec3d> c1(n);
+    c1[0] = slope[0];
+    for (int i = 1; i < n - 2; i++) {
+	const double dx1 = x[i]   - x[i-1];
+	const double dx2 = x[i+1] - x[i];
+	const double dx3 = x[i+1] - x[i-1];
+	for (int d = 0; d < 3; d++) {
+	    if (slope[i-1][d] * slope[i][d] <= 0)
+		c1[i][d] = 0;
+	    else 
+		c1[i][d] = 3 * dx3 / ((dx3 + dx2) / slope[i-1][d] + ((dx3 + dx1) / slope[i][d]));
+	}
+    }
+
+    // get degree-2 and digree-3 coefficients
+    vector<cv::Vec3d> c2(n-1), c3(n-1);
+    for (int i = 0; i < n - 1; i++) {
+	for (int d = 0; d < 3; d++) {
+	    const double z = c1[i][d] + c1[i+1][d] - slope[i][d] * 2;
+	    c2[i][d] = (slope[i][d] - c1[i][d] - z) / (x[i+1] - x[i]);
+	    c3[i][d] = z / (x[i+1] - x[i]) / (x[i+1] - x[i]);
+	}
+    }
+
+    // create colormap
+    for (int i = 0, j = 1; i < colormap.size(); i++) {
+	const double cx = x[0] + (x[n-1] - x[0]) * i / colormap.size(); 
+	while (cx > x[j])
+	    j++;
+	const double delta = cx - x[j-1];
+	for (int d = 0; d < 3; d++) {
+	    colormap[i][d] = y[j-1][d] + c1[j-1][d] * delta + c2[j-1][d] * delta * delta + c3[j-1][d] * delta * delta * delta + 0.5;
+	}
+    }
+
+    // dump colormap to "colormap.png"
     {
 	const int height = 48;
-	cv::Mat image(height, color_vector.size(), CV_8UC3);
-	for (int i = 0; i < height; i++) {
-	    cv::Vec3b *line = image.ptr<cv::Vec3b>(i);
-	    for (int j = 0; j < color_vector.size(); j++) {
-		line[j] = color_vector[j];
+	cv::Mat image(height, colormap.size(), CV_8UC3);
+	for (int i = 0; i < colormap.size(); i++) {
+	    for (int j = 0; j < height; j++) {
+		image.at<cv::Vec3b>(j, i) = colormap[i];
 	    }
 	}
 	cv::imwrite("colormap.png", image);
+    }
+
+    // dump colormap to "colormap.csv"
+    {
+	ofstream dump("colormap.csv");
+	for (int i = 0; i < colormap.size(); i++) {
+	    dump << i;
+	    for (int d = 0; d < 3; d++)
+	    	dump << ", " << (int)colormap[i][d];
+	    dump << endl;
+	}
     }
 }
 
 
 inline cv::Vec3b color(const double m) {
-    int index = (int)((color_vector.size()-1) * (m / MAX_M));
-    return color_vector[index];
+    int index = (int)((colormap.size()-1) * (m / MAX_M));
+    return colormap[index];
 }
 
 //

@@ -40,3 +40,6 @@ clean-image:
 video: mandelbrot run.sh scene1.mp4 scene2.mp4 seahorse.mp4
 
 scene1.mp4 scene2.mp4 seahourse.mp4 test.mp4: mandelbrot
+
+colormap-graph.png: colormap-graph.gnuplot colormap.csv
+	gnuplot colormap-graph.gnuplot
