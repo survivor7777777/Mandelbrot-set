@@ -39,7 +39,7 @@ double mandelbrot(const complex<long double>& c) {
 
 vector<cv::Vec3b> colormap(1000);
 
-void init_colors() {
+void init_colormap() {
     const vector<cv::Vec3b> y = {
 	cv::Vec3b(100,   7,   0),
 	cv::Vec3b(203, 107,  32),
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
 	return 2;
     }
 
-    init_colors();
+    init_colormap();
 
     const complex<long double> z1(real, imag);
     const long double abs_z1 = abs(z1);
