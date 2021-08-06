@@ -1,15 +1,23 @@
 .PHONY: all clean very-clean clean-image video
 
-CXXFLAGS := -std=c++11 -O3 -I/usr/local/include/opencv4
-LDFLAGS := -O3 -lm -lopencv_core -lopencv_imgcodecs -lopencv_imgproc -L/usr/local/lib/opencv4
+CXXFLAGS := -std=c++11 -O3
+LDFLAGS := -O3 -lm -lopencv_core -lopencv_imgcodecs -lopencv_imgproc
 
 OS := $(shell uname -s)
+ARCH := $(shell uname -m)
 ifeq ($(OS), Darwin)
     CXXFLAGS += -Xpreprocessor -fopenmp
     LDFLAGS += -Xpreprocessor -fopenmp -lomp
+ifeq ($(ARCH), arm64)
+    CXXFLAGS += -I/opt/homebrew/include -I/opt/homebrew/include/opencv4
+    LDFLAGS += -L/opt/homebrew/lib -L/opt/homebrew/lib/opencv4
 else
-    CXXFLAGS += -fopenmp
-    LDFLAGS += -fopenmp
+    CXXFLAGS += -I/usr/local/include -I/usr/local/include/opencv4
+    LDFLAGS += -L/usr/local/lib -L/usr/local/lib/opencv4
+endif
+else
+    CXXFLAGS += -fopenmp -I/usr/local/include/opencv4
+    LDFLAGS += -L/usr/local/lib/opencv4
 endif
 
 .SUFFIXES: .dat .mp4
