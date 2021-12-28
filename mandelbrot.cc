@@ -15,11 +15,11 @@
 
 using namespace std;
 
-struct mrange {
+struct Range {
     double min;
     double max;
-    mrange(double a, double b): min(a), max(b) {}
-    mrange(const mrange& mr): min(mr.min), max(mr.max) {}
+    Range(double a, double b): min(a), max(b) {}
+    Range(const Range& mr): min(mr.min), max(mr.max) {}
 };
 
 const int MAX_N = 3000;
@@ -56,10 +56,10 @@ void init_colormap() {
     };
     const vector<double> x = {
 	0.00,
-	0.50,
-	0.70,
+	0.20,
+	0.40,
+	0.60,
 	0.80,
-	0.90,
 	1.00,
     };
     assert(x.size() == y.size());
@@ -133,9 +133,10 @@ void init_colormap() {
     }
 }
 
+Range prev_mrange(0, MAX_M);
 
 inline cv::Vec3b color(const double m) {
-    int index = (int)((colormap.size()-1) * (m / MAX_M));
+    int index = (int)((colormap.size()-1) * (m - prev_mrange.min) / (MAX_M - prev_mrange.min));
     return colormap[index];
 }
 
@@ -143,26 +144,27 @@ inline cv::Vec3b color(const double m) {
 // Draw a picture
 //
 
-mrange draw(const complex<long double>& p, const long double range,
+Range draw(const complex<long double>& p, const long double range,
     const int width, const int height, const string& name) {
-    mrange ret(DBL_MAX, 0);
+    Range mrange(DBL_MAX, 0);
     const long double scale = range * 2 / width;
     cv::Mat image(height, width, CV_8UC3);
+#pragma omp parallel for
     for (int i = 0; i < height; i++) {
 	long double y = p.imag() + (height / 2 - i) * scale;
 	cv::Vec3b *ip = image.ptr<cv::Vec3b>(i);
-	#pragma omp parallel for
 	for (int j = 0; j < width; j++) {
 	    long double x = p.real() + (j - width / 2) * scale;
 	    const complex<long double> z(x, y);
 	    const double m = mandelbrot(z);
-	    if (ret.min > m) ret.min = m;
-	    if (ret.max < m) ret.max = m;
+	    if (mrange.min > m) mrange.min = m;
+	    if (mrange.max < m) mrange.max = m;
 	    ip[j] = color(m);
 	}
     }
     cv::imwrite(name, image);
-    return ret;
+    prev_mrange = mrange;
+    return mrange;
 }
 
 string filename(int n) {
@@ -216,12 +218,13 @@ int main(int argc, char** argv) {
     init_colormap();
 
     const complex<long double> z(real, imag);
+    draw(z, range_s, width, height, filename(0));
     const long double log_rate = (log(range_e) - log(range_s)) / (frames - 1);
     for (int i = 0; i < frames; i++) {
 	const string name = filename(i);
 	const long double r = range_s * exp(i * log_rate);
 	const long double x = (long double)(frames - i) / frames;
-	mrange mr = draw(z, r, width, height, name);
+	Range mr = draw(z, r, width, height, name);
 	cout << i << " " << setprecision(55) << r << " " << setprecision(5) << mr.min << " " << mr.max << endl;
     }
 }
