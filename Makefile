@@ -17,7 +17,7 @@ else
 endif
 else
     CXXFLAGS += -fopenmp -I/usr/local/include/opencv4
-    LDFLAGS += -L/usr/local/lib/opencv4
+    LDFLAGS += -L/usr/local/lib/opencv4 -fopenmp
 endif
 
 .SUFFIXES: .dat .mp4
